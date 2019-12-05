@@ -1,26 +1,38 @@
 # https://adventofcode.com/2019/day/2
 
-STATE = list(map(int,open('day2-input.txt','r').read().split(',')))
-STATE[1] = 12
-STATE[2] = 2
-COUNTER = 0
-def execute(state):
-    global COUNTER
-    op = state[COUNTER:COUNTER+4]
-    COUNTER += 4
-    if len(op) == 4:
-        opcode, addr1, addr2, ra = op
+BASE_STATE = list(map(int,open('day2-input.txt','r').read().split(',')))
+OOB = len(BASE_STATE)
+def program(code, *args, return_address=0):
+    memory = list(code)    
+    for (a,v) in args:
+        memory[a] = v
+    COUNTER = 0
+    
+    def execute(count):
+        opcode = memory[count]
+        if opcode == 1:
+            _, a1, a2, ra = memory[count:count+4]
+            memory[ra] = memory[a1] + memory[a2]
+            return count+4
+        elif opcode == 2:
+            _, a1, a2, ra = memory[count:count+4]
+            memory[ra] = memory[a1] * memory[a2]
+            return count+4
+        elif opcode == 99:
+            return -1
+        else: return -2
+    
+    while COUNTER < OOB:
+        r = execute(COUNTER)
+        if r == -1:
+            return memory[return_address]
+        else:
+            COUNTER = r
     else:
-        opcode = op[0]
+        return -1
 
-    if opcode == 99:
-        pass
-    elif opcode == 1:
-        STATE[ra] = state[addr1] + state[addr2]
-        execute(STATE)
-    elif opcode == 2:
-        STATE[ra] = state[addr1] * state[addr2]
-        execute(STATE)
-
-execute(STATE)
-print(STATE[0])
+for noun in range(0,100):
+    for verb in range(0,100):
+        if program(BASE_STATE, (1,noun), (2,verb)) == 19690720:
+            print(noun, verb, 100*noun + verb)
+            break
