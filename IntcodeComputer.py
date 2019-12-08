@@ -1,88 +1,64 @@
-FILE = 'day5-input.txt'
-BASE_STATE = list(map(int,open(FILE,'r').read().split(',')))
-OOB = len(BASE_STATE)
-def program(*args, return_address=0):
-    memory = list(BASE_STATE)    
-    for (a,v) in args:
-        memory[a] = v
-    COUNTER = 0
+import sys
+import copy
 
-    def execute(count):
-        opparams = memory[count]
-        opcode = opparams % 100
-        params = int('0b' + str((opparams - opcode) // 100),2)
+class Machine:
+    def __init__(self, data):
+        self.data = copy.deepcopy(data)
+        self.IP = 0
 
-        def getValue(value, mask):
-            return memory[value] if params & mask == 0 else value
 
-        # Takes 2 arguments and returns their sum to the third address
-        if opcode == 1:
-            _, a1, a2, ra = memory[count:count+4]
-            memory[ra] = getValue(a1,1) + getValue(a2,2)
-            return count+4
+    def run(self, input):
+        while self.data[self.IP] != 99:
 
-        # Takes 2 arguments and returns their product to the third address
-        elif opcode == 2:
-            _, a1, a2, ra = memory[count:count+4]
-            memory[ra] = getValue(a1,1) * getValue(a2,2)
-            return count+4
-        
-        # Takes a user input and stores it at the address given
-        elif opcode == 3:
-            _, ra = memory[count:count+2]
-            memory[ra] = int(input("Input a number: "))
-            return count+2
-        
-        # Outputs the value at the parameter address
-        elif opcode == 4:
-            _, addr = memory[count:count+2]
-            print("Test: " + str(getValue(addr,1)))
-            return count+2
-        
-        # If first argument is not 0, set count to 2nd number, else nothing
-        elif opcode == 5:
-            _, addr, ra = memory[count:count+3]
-            addr = getValue(addr,1)
-            if addr != 0:
-                return getValue(ra,2)
-            else:
-                return count+3
+            cmd = self.data[self.IP] % 100
 
-        # If first argument is 0, set count to 2nd number, else nothing
-        elif opcode == 6:
-            _, addr, ra = memory[count:count+3]
-            addr = getValue(addr,1)
-            if addr == 0:
-                return getValue(ra,2)
-            else:
-                return count+3
+            if cmd == 1: #add
+                self.set_param(3, self.param(1) + self.param(2))
+                self.IP += 4
+            elif cmd == 2: #multiply
+                self.set_param(3, self.param(1) * self.param(2))
+                self.IP += 4
+            elif cmd == 3: #input
+                #print(f"using input: {input}")
+                self.set_param(1, input)
+                self.IP += 2
+            elif cmd == 4: #output
+                output = self.param(1)
+                #print(f"output: {output}")
+                self.IP += 2
+                return output
+            elif cmd == 5: #jump_if_true
+                self.IP = self.param(2) if self.param(1) != 0 else self.IP + 3
+            elif cmd == 6: #jump_if_false
+                self.IP = self.param(2) if self.param(1) == 0 else self.IP + 3
+            elif cmd == 7: #less_than
+                self.set_param(3, 1 if self.param(1) < self.param(2) else 0)
+                self.IP += 4
+            elif cmd == 8: #equals
+                self.set_param(3, 1 if self.param(1) == self.param(2) else 0)
+                self.IP += 4
+            else: #error
+                print(f"unknown opcode: {self.data[self.IP]}")
+                sys.exit(-1)
+        return 0
 
-        # Returns 1 if a < b, 0 otherwise
-        elif opcode == 7:
-            _, a1, a2, ra = memory[count:count+4]
-            memory[ra] = 1 if (getValue(a1,1) < getValue(a2,2)) else 0
-            return count+4
+    @property
+    def is_running(self):
+        return self.data[self.IP] != 99
 
-        # Returns 1 if a == b, 0 otherwise
-        elif opcode == 8:
-            _, a1, a2, ra = memory[count:count+4]
-            memory[ra] = 1 if (getValue(a1,1) == getValue(a2,2)) else 0
-            return count+4
-
-        # Halts the program
-        elif opcode == 99:
-            return -1
-        else: return -2
-    
-    while COUNTER < OOB:
-        r = execute(COUNTER)
-        if r == -1:
-            if return_address == -1:
-                print("Program has halted.")
-                return None
-            else:
-                return memory[return_address]
+    def param(self, n):
+        if (self.data[self.IP] // (10**(n+1))) % 10 == 0:
+            return self.data[self.data[self.IP+n]]
         else:
-            COUNTER = r
-    else:
-        return -1
+            return self.data[self.IP+n]
+
+    def set_param(self, n, val):
+        if (self.data[self.IP] // (10**(n+1))) % 10 == 0:
+            self.data[self.data[self.IP+n]] = val
+        else:
+            self.data[self.IP+n] = val
+
+    # Used for day 7
+    def phase_setup(self, n):
+        self.set_param(1, n)
+        self.IP += 2
