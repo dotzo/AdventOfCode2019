@@ -1,6 +1,5 @@
 import sys
 import copy
-
 class Machine:
     def __init__(self, data):
         self.data = copy.deepcopy(data)
@@ -21,12 +20,12 @@ class Machine:
                 self.set_param(3, self.param(1) * self.param(2))
                 self.IP += 4
             elif cmd == 3: #input
-                print(f"using input: {input}")
+                #LOG.write(f"\t--using input: {input}\n")
                 self.set_param(1, input)
                 self.IP += 2
             elif cmd == 4: #output
                 output = self.param(1)
-                #print(f"output: {output}")
+                #LOG.write(f"\t--output: {output}\n")
                 self.IP += 2
                 return output
             elif cmd == 5: #jump_if_true
@@ -45,7 +44,7 @@ class Machine:
             else: #error
                 print(f"unknown opcode: {self.data[self.IP]}")
                 sys.exit(-1)
-        return 0
+        return -1
 
     @property
     def is_running(self):
