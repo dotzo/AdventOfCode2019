@@ -57,13 +57,21 @@ while True:
     current_heading = turnRobot(current_heading, turn)
     #LOG.write(f"\tPainted here: {grid[current_pos]}, Turned toward: {current_heading}\n")
     current_pos = moveRobot(current_pos, current_heading)
-    
-rows, cols = 7, 60
-message = [[' ' for i in range(cols)] for j in range(rows)]
+
+
+cols, rows = zip(*grid.keys())
+min_cols = -min(cols) if min(cols) < 0 else 0
+min_rows = -min(rows) if min(rows) < 0 else 0
+cols = [*map(lambda x: min_cols + x, cols)]
+rows = [*map(lambda x: min_rows + x, rows)]
+message = [[' ' for i in range(max(cols)+1)] for j in range(max(rows)+1)]
+#LOG.write(f"min_rows: {min_rows}, min_cols: {min_cols}\n")
 for k,v in grid.items():
     #LOG.write(f"{k[0]}, {k[1]}, {v}\n")
-    message[k[1]][k[0]] = '#' if v == 1 else ' '
-    LOG.write(f"{k[0]}, {k[1]}, {v}, {message[k[1]][k[0]]}\n")
+    message[k[1]+min_rows][k[0]+min_cols] = '#' if v == 1 else ' '
+    #LOG.write(f"{k[0]}, {k[1]}, {v}, {message[k[1]+min_rows][k[0]+min_cols]}\n")
 
 message = list(map(concatenate, message))
-print(*message, sep = '\n')
+for line in message:
+    LOG.write(line)
+    LOG.write('\n')
