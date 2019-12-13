@@ -1,6 +1,8 @@
 # https://adventofcode.com/2019/day/3
 
-path1, path2 = list(map(lambda x: x.split(','), open('day3-input.txt','r').readlines()))
+from util import filehelper as fh
+
+path1, path2 = [*map(lambda x: x.strip().split(','),fh.lines_to_list('day3-input.txt', str))]
 
 def add(t1,t2):
     return (t1[0]+t2[0], t1[1]+t2[1])
@@ -32,5 +34,12 @@ def intersections(p,q):
 wire1 = makeWire(path1)
 wire2 = makeWire(path2)
 
+def part_1():
+    return min(map(distance, intersections(wire1, wire2)))
 
-print(min(map(lambda p: delay(wire1, wire2, p), intersections(wire1, wire2))))
+def part_2():
+    return min(map(lambda p: delay(wire1, wire2, p), intersections(wire1, wire2)))
+
+if __name__ == '__main__':
+    print(f"The answer to part 1 is {part_1()}") # 2129
+    print(f"The answer to part 2 is {part_2()}") # 134662

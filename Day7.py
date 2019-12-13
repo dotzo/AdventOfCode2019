@@ -1,26 +1,35 @@
 # https://adventofcode.com/2019/day/7
 
-from IntcodeComputer import Machine
+from util import filehelper as fh
+from IntCode import IntComputer
 from itertools import permutations
 
-with open('day7-input.txt','r') as f:
-    contents = [int(i.strip()) for i in f.read().split(',')]
+program = fh.csv_to_list('day7-input.txt')
 
-max_output = 0
+def amplifyer(phase):
+    computers = []
+    for p in phase:
+        computers.append(IntComputer(program, inputs=[p], wait_for_input=True, wait_after_output=True))
+        computers[-1].run()
 
-for phases in permutations([5,6,7,8,9]):
-    #print("Phase: ", phases)
-    machines = []
-    for phase in phases:
-        machines.append(Machine(contents))
-        machines[-1].phase_setup(phase)
-    
-    
     in_out = 0
+    max_output = 0
+    while not computers[0].finished:
+        for comp in computers:
+            comp.inputs = [in_out]
+            in_out = comp.run()
 
-    while machines[0].is_running:
-        for machine in machines:
-            in_out = machine.run(in_out)
     max_output = max(max_output, in_out)
 
-print(f"max output: {max_output}")
+    return max_output
+
+
+def part_1():
+    return max(map(amplifyer, permutations([0,1,2,3,4])))
+
+def part_2():
+    return max(map(amplifyer, permutations([5,6,7,8,9])))
+
+if __name__ == '__main__':
+    print(f"The answer to part 1 is {part_1()}") # 17440
+    print(f"The answer to part 2 is {part_2()}") # 27561242

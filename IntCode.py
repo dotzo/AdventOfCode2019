@@ -83,8 +83,8 @@ class IntComputer:
 
     def save(self, modes: typing.List[Mode]) -> None:
         target_position = self.get_position_for_mode(1, modes)
-        if len(self.input) > 0:
-            user_input = self.input.pop(0)
+        if len(self.inputs) > 0:
+            user_input = self.inputs.pop(0)
             self.memory[target_position] = user_input
         else:
             self.memory[target_position] = int(input("Input: "))

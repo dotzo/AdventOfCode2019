@@ -1,13 +1,14 @@
 # https://adventofcode.com/2019/day/2
 
 from IntCode import IntComputer
+from util import filehelper as fh
 
-program = list(map(int,open('day2-input.txt','r').read().split(',')))
+program = fh.csv_to_list('day2-input.txt')
 
 def part_1():
     computer = IntComputer(program)
     computer.run(12, 2)
-    print(computer.memory[0])
+    return computer.memory[0]
 
 def part_2():
     output = 19690720
@@ -18,5 +19,7 @@ def part_2():
             if computer.memory[0] == output:
                 return 100*noun + verb
 
-part_1()
-print(part_2())
+
+if __name__ == '__main__':
+    print(f"The answer to part 1 is {part_1()}") # 3790689
+    print(f"The answer to part 2 is {part_2()}") # 6533

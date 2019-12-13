@@ -1,13 +1,13 @@
 # https://adventofcode.com/2019/day/11
 
-from IntcodeComputer import Machine
+from IntCode import IntComputer
 from functools import reduce
+from util import filehelper as fh
 
-INPUT = open('day11-input.txt','r').read()
-INPUT = list(map(int, INPUT.split(',')))
+program = fh.csv_to_list('day11-input.txt')
 LOG = open('log.txt','w')
 
-robot = Machine(INPUT)
+robot = IntComputer(program, wait_after_output=True, wait_for_input=True)
 current_pos = (0,0)
 panels_painted = set()
 facing_directions = {'N': (0,-1), 'S': (0,1), 'E': (1,0), 'W': (-1,0)}
@@ -45,12 +45,13 @@ def concatenate(l):
 while True:
     current_color = getColor()
     #LOG.write(f"Currently at: {current_pos}, Color: {current_color}, Facing: {current_heading}\n")
-    next_color = robot.run(current_color)
+    robot.inputs = [current_color]
+    next_color = robot.run()
     #LOG.write(f"\tNext color: {next_color}\n")
-    if not robot.is_running: # After the last input, before halting, the robot pauses. Need to check if it's halted
+    if robot.finished: # After the last input, before halting, the robot pauses. Need to check if it's halted
         print("DONE")
         break
-    turn = robot.run(current_color)
+    turn = robot.run()
 
     #LOG.write(f"\tTurn: {turn}\n")
     grid[current_pos] = next_color
