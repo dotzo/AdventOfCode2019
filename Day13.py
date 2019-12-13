@@ -1,54 +1,101 @@
 # https://adventofcode.com/2019/day/13\\
 
-from IntcodeComputer import Machine
+from IntCode import IntComputer
 
-INPUT = open('day13-input.txt','r').read()
-INPUT = list(map(int, INPUT.split(',')))
+EMPTY = 0
+WALL = 1
+BLOCK = 2
+PADDLE = 3
+BALL = 4
 
-HEIGHT = 100
-WIDTH = 100
+NO_MOVE = 0
+LEFT = -1
+RIGHT = 1
 
-board = [[0 for i in range(WIDTH)] for j in range(HEIGHT)]
+BLOCK_TYPES = {
+    EMPTY: ' ',
+    WALL: '#',
+    BLOCK: '@',
+    PADDLE: '_',
+    BALL: 'o'
+}
 
-game = Machine(INPUT, wait_after_output=True, wait_for_input=True)
-# set addr 0 to 2 for free to play mode
-game.play_game()
 
-n = 0
-current_x = None
-current_y = None
-ball_x = None
-paddle_x = None
-score = 0
-while not game.finished:
-    n += 1
-    output = game.run()
-    ready = not game.finished and not game.waiting
-    if game.waiting: #waiting for input
-        if paddle_x < ball_x:
-            i = 1
-        elif paddle_x > ball_x:
-            i = -1
-        else:
-            i = 0
-        game.inputs = [i]
+class Game:
+    def __init__(self, program, play=True, visual_mode=False):
+        if play:
+            program[0] = 2
+        self.computer = IntComputer(
+            program, wait_after_output=True, wait_for_input=True
+        )
+        self.visual_mode = visual_mode
+        self.game_map = {}
+        self.score = None
 
-        n -= 1 #reset to rerun with above input
-    elif ready and n == 1:
-        current_x = output
-    elif ready and n == 2:
-        current_y = output
-    elif ready and n == 3:
-        if current_x == -1 and current_y == 0:
-            score = output
-        else:
-            board[current_y][current_x] == output
+    def render(self):
+        last_row = 0
+        # reset the terminal window
+        print("\033c", end="")
+        for y, x in sorted(self.game_map.keys()):
+            if last_row != y:
+                print("")
+            print(BLOCK_TYPES[self.game_map[(y,x)]], end="")
+            last_row = y
+        print("")
 
-            if output == 4: #ball
-                ball_x = current_x
-            if output == 3: #paddle
-                paddle_x = current_x
+    def play_game(self):
         n = 0
+        current_x = None
+        current_y = None
+        ball_x = None
+        paddle_x = None
+        while not self.computer.finished:
+            n += 1
+            output = self.computer.run()
+            ready = not self.computer.finished and not self.computer.waiting
+            if self.computer.waiting: #waiting for input
+                if paddle_x < ball_x:
+                    i = RIGHT
+                elif paddle_x > ball_x:
+                    i = LEFT
+                else:
+                    i = NO_MOVE
+                self.computer.inputs = [i]
+                if self.visual_mode:
+                    self.render()
+                n -= 1 #reset to rerun with above input
+
+            elif ready and n == 1:
+                current_x = output
+            elif ready and n == 2:
+                current_y = output
+            elif ready and n == 3:
+                if current_x == -1 and current_y == 0:
+                    self.score = output
+                else:
+                    current_tile == output
+                    self.game_map[(current_y, current_x)] = current_tile
+                    if current_tile == 4: #ball
+                        ball_x = current_x
+                    if current_tile == 3: #paddle
+                        paddle_x = current_x
+                n = 0
 
 
-print(score)
+def part_1():
+    with open('day13-input.txt','r') as f:
+        program = [*map(int, f.read().split(','))]
+
+    game = Game(program, play=False, visual_mode=True)
+    game.play_game()
+
+    count = 0
+
+    for item in game.game_map:
+        if game.game_map[item] == BLOCK:
+            count += 1
+
+    print(f"Total Blocks: {count}")
+
+if __name__ == "__main__":
+    part_1()
