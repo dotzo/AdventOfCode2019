@@ -25,12 +25,14 @@ def countDigits(s, d):
 layers = splitString(INPUT, DEPTH)
 
 
-final_image = []
+final_image = ''
 for i in range(WIDTH*HEIGHT):
-    test = []
+    test = ''
     for j in range(DEPTH):
-        test.append(int(layers[j][i]))
-    final_image.append(list(filter(lambda x: x != 2, test))[0])
+        test += layers[j][i]
+    final_image += list(filter(lambda x: x != '2', test))[0]
 
+final_image = final_image.replace('0', ' ')
+final_image = final_image.replace('1', '#')
 for row in splitString(final_image, HEIGHT):
     print(row)
