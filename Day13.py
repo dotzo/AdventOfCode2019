@@ -49,6 +49,7 @@ class Game:
         current_y = None
         ball_x = None
         paddle_x = None
+        current_tile = None
         while not self.computer.finished:
             n += 1
             output = self.computer.run()
