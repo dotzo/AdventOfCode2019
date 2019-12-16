@@ -110,7 +110,7 @@ class Robot():
                     if len(self.junctions) > 0:
                         self.map[self.current_pos] = 'DEAD'
                         while self.current_pos not in self.junctions:
-                            self.render()
+                            #self.render()
                             #print(self.moves[-1:-10:-1])
                             self.move_robot(opposite(self.moves.pop(-1)))
                         continue
